@@ -19,6 +19,8 @@ browser: webdriver.Chrome = None
 config = None
 uuid_regex = r"\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b"
 hangup_thread: Timer = None
+screenRecorder: ScreenRecorder = ScreenRecorder()
+keyboard: Controller = Controller()
 
 class ScreenRecorder:
     def __init__(self):

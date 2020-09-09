@@ -9,25 +9,6 @@ from pynput.keyboard import Key, Controller
 import json
 import os
 
-sleepDelay = 2      # increase if you have a slow internet connection
-timeOutDelay = 30   # increase if you have a slow internet connection
-
-maxParticipants = curParticipants = 0
-minParticipants = 10
-
-opt = Options()
-opt.add_argument("--disable-infobars")
-opt.add_argument("start-maximized")
-opt.add_argument("--disable-extensions")
-# Pass the argument 1 to allow and 2 to block
-opt.add_experimental_option("prefs", { \
-    "profile.default_content_setting_values.media_stream_mic": 1, 
-    "profile.default_content_setting_values.media_stream_camera": 1,
-    "profile.default_content_setting_values.notifications": 1 
-})
-
-browser = webdriver.Chrome(ChromeDriverManager().install(),options=opt)
-
 class ScreenRecorder(object):
     def start(self):
         keyboard.press(Key.cmd)
@@ -46,7 +27,24 @@ class ScreenRecorder(object):
         keyboard.release(Key.alt)
         keyboard.release('r')
 
+sleepDelay = 2      # increase if you have a slow internet connection
+timeOutDelay = 30   # increase if you have a slow internet connection
 
+maxParticipants = curParticipants = 0
+minParticipants = 10
+
+opt = Options()
+opt.add_argument("--disable-infobars")
+opt.add_argument("start-maximized")
+opt.add_argument("--disable-extensions")
+# Pass the argument 1 to allow and 2 to block
+opt.add_experimental_option("prefs", { \
+    "profile.default_content_setting_values.media_stream_mic": 1, 
+    "profile.default_content_setting_values.media_stream_camera": 1,
+    "profile.default_content_setting_values.notifications": 1 
+})
+
+browser = webdriver.Chrome(ChromeDriverManager().install(),options=opt)
 screenRecorder = ScreenRecorder()
 keyboard = Controller()
 

@@ -10,22 +10,25 @@ import json
 import os
 
 class ScreenRecorder(object):
-    def start(self):
+    def __init__(self):
+        self.recording = False
+
+    def __sendRecordStopCombination(self):
         keyboard.press(Key.cmd)
         keyboard.press(Key.alt)
         keyboard.press('r')
         keyboard.release(Key.cmd)
         keyboard.release(Key.alt)
         keyboard.release('r')
+
+    def start(self):
+        if (not self.recording): 
+            self.__sendRecordStopCombination()
     
         
     def stop(self):
-        keyboard.press(Key.cmd)
-        keyboard.press(Key.alt)
-        keyboard.press('r')
-        keyboard.release(Key.cmd)
-        keyboard.release(Key.alt)
-        keyboard.release('r')
+        if (self.recording): 
+            self.__sendRecordStopCombination()
 
 sleepDelay = 2      # increase if you have a slow internet connection
 timeOutDelay = 30   # increase if you have a slow internet connection
@@ -108,19 +111,18 @@ def checkAndJoinMeeting():
     actions = ActionChains(browser)
     rosterBtn = wait_and_find_element_by_xpath('//button[@id="roster-button"]', timeOutDelay)
     actions.move_to_element(rosterBtn).click().perform()
-    print("clicked")
     numStr = wait_and_find_elements_by_xpath('//span[@class="toggle-number"][@ng-if="::ctrl.enableRosterParticipantsLimit"]')
-    print(numStr)
     if len(numStr) >= 2:
         if numStr[1].text[1:-1] != '':
             maxParticipants = curParticipants = int(numStr[1].text[1:-1])
+    elif len(numStr) == 0:
+        actions.move_to_element(rosterBtn).click().perform()
 
 def checkAndEndOrLeaveOrJoinMeeting():
     global maxParticipants, curParticipants
     hangupBtn = wait_and_find_element_by_xpath('//button[@id="hangup-button"]', 2)
     if hangupBtn != None: # currently in meeting
         numStr = wait_and_find_elements_by_xpath('//span[@class="toggle-number"][@ng-if="::ctrl.enableRosterParticipantsLimit"]')
-        print(numStr)
         if len(numStr) >= 2:
             if numStr[1].text[1:-1] != '':
                 curParticipants = int(numStr[1].text[1:-1])

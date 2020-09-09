@@ -1,5 +1,3 @@
-# [ms-teams-auto-call-recorder](https://github.com/BartlomiejRasztabiga/ms-teams-auto-call-recorder)
-
 ## Built upon [MS-Teams-Auto-Joiner](https://github.com/atharva-lipare/MS-Teams-Auto-Joiner) and [Teams-Auto-Joiner](https://github.com/TobiasPankner/Teams-Auto-Joiner)
 
 
@@ -19,7 +17,7 @@
 
 - [Python3](https://www.python.org/downloads/)
 - [Google Chrome browser](https://www.google.com/intl/en_in/chrome/)
-- Windows10
+- [Windows 10 (with Game Bar)](https://www.microsoft.com/pl-pl/software-download/windows10)
 
 ## Prerequisites:
 

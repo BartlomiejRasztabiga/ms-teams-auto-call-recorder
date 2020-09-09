@@ -15,12 +15,6 @@ from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.utils import ChromeType
 from pynput.keyboard import Key, Controller
 
-browser: webdriver.Chrome = None
-config = None
-uuid_regex = r"\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b"
-hangup_thread: Timer = None
-screenRecorder: ScreenRecorder = ScreenRecorder()
-keyboard: Controller = Controller()
 
 class ScreenRecorder:
     def __init__(self):
@@ -43,6 +37,16 @@ class ScreenRecorder:
         if (self.recording):
             self.__sendRecordStopCombination()
             self.recording = False
+
+
+# Globals
+browser: webdriver.Chrome = None
+config = None
+uuid_regex = r"\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b"
+hangup_thread: Timer = None
+screenRecorder: ScreenRecorder = ScreenRecorder()
+keyboard: Controller = Controller()
+
 
 class Meeting:
     def __init__(self, started_at, meeting_id):

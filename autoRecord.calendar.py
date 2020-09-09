@@ -25,10 +25,12 @@ class ScreenRecorder(object):
     def start(self):
         if (not self.recording):
             self.__sendRecordStopCombination()
+            self.recording = True
 
     def stop(self):
         if (self.recording):
             self.__sendRecordStopCombination()
+            self.recording = False
 
 
 sleepDelay = 2      # increase if you have a slow internet connection

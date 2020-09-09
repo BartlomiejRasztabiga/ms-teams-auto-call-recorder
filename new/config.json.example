@@ -11,6 +11,7 @@
 
   "auto_leave_after_min": -1,
   "leave_if_last": true,
+  "leave_if_less_than_participants": 10,
 
   "headless" : false,
   "mute_audio": false,

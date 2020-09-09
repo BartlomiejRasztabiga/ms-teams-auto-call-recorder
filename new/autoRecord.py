@@ -195,7 +195,9 @@ class Team:
                                 break
 
                     if meeting_id == active_meeting.meeting_id:
-                        if participants == 1 and 'leave_if_last' in config and config['leave_if_last']:
+                        if 'leave_if_less_than_participants' in config and config['leave_if_less_than_participants'] and participants < int(config['leave_if_less_than_participants']):
+                            hangup()
+                        elif participants == 1 and 'leave_if_last' in config and config['leave_if_last']:
                             hangup()
                     else:
                         channel.meetings.append(
@@ -204,6 +206,9 @@ class Team:
     def update_elem(self):
         team_elems = browser.find_elements_by_css_selector(
             "ul>li[role='treeitem']>div[sv-element]")
+        print(team_elems)
+        print(self.index)
+        # throws index out of bonds
         self.elem = team_elems[self.index]
 
 
@@ -303,14 +308,17 @@ def join_newest_meeting(teams):
 
     print(f"Joined meeting: {meeting_team.name} > {meeting_channel.name}")
 
-    browser.find_element_by_css_selector(
-        "span[data-tid='appBarText-Teams']").click()
+    # TODO why do I need that?
+    # browser.find_element_by_css_selector(
+    #     "span[data-tid='appBarText-Teams']").click()
 
     active_meeting = meeting_to_join
 
     if 'auto_leave_after_min' in config and config['auto_leave_after_min'] > 0:
         hangup_thread = Timer(config['auto_leave_after_min'] * 60, hangup)
         hangup_thread.start()
+
+    screenRecorder.start()
 
     return True
 
@@ -321,6 +329,7 @@ def hangup():
             "button[data-tid='call-hangup']")
         hangup_btn.click()
 
+        screenRecorder.stop()
         print("Left Meeting")
 
         if hangup_thread:

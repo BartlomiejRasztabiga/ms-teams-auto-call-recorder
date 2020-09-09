@@ -53,6 +53,9 @@ class Meeting:
         self.started_at = started_at
         self.meeting_id = meeting_id
 
+    def isActive(self):
+        return self.meeting_id != -1
+
 
 class Channel:
     def __init__(self, name, meetings, blacklisted=False):
@@ -195,10 +198,11 @@ class Team:
                                 break
 
                     if meeting_id == active_meeting.meeting_id:
-                        if 'leave_if_less_than_participants' in config and config['leave_if_less_than_participants'] and participants < int(config['leave_if_less_than_participants']):
-                            hangup()
-                        elif participants == 1 and 'leave_if_last' in config and config['leave_if_last']:
-                            hangup()
+                        pass
+                        # if 'leave_if_less_than_participants' in config and config['leave_if_less_than_participants'] and participants < int(config['leave_if_less_than_participants']):
+                        #     hangup()
+                        # elif participants == 1 and 'leave_if_last' in config and config['leave_if_last']:
+                        #     hangup()
                     else:
                         channel.meetings.append(
                             Meeting(time_started, meeting_id))
@@ -206,10 +210,30 @@ class Team:
     def update_elem(self):
         team_elems = browser.find_elements_by_css_selector(
             "ul>li[role='treeitem']>div[sv-element]")
-        print(team_elems)
-        print(self.index)
+        # print(team_elems)
+        # print(self.index)
         # throws index out of bonds
         self.elem = team_elems[self.index]
+        # pass
+
+
+def update_current_meeting():
+    meeting_id = active_meeting.meeting_id
+
+    rosterBtn = browser.find_element_by_xpath('//button[@id="roster-button"]')
+    rosterBtn.click()
+    numStr = browser.find_elements_by_xpath(
+        '//span[@class="toggle-number"][@ng-if="::ctrl.enableRosterParticipantsLimit"]')
+    if len(numStr) >= 1:
+        if numStr[1].text[1:-1] != '':
+            participants = int(numStr[1].text[1:-1])
+        else:
+            participants = 99999
+    if meeting_id == active_meeting.meeting_id:
+        if 'leave_if_less_than_participants' in config and config['leave_if_less_than_participants'] and participants < int(config['leave_if_less_than_participants']):
+            hangup()
+        elif participants == 1 and 'leave_if_last' in config and config['leave_if_last']:
+            hangup()
 
 
 def load_config():
@@ -266,6 +290,8 @@ def join_newest_meeting(teams):
     if meeting_team is None:
         return False
 
+    print('meeting to join')
+
     hangup()
 
     channels_elem = meeting_team.expand_channels()
@@ -309,8 +335,13 @@ def join_newest_meeting(teams):
     print(f"Joined meeting: {meeting_team.name} > {meeting_channel.name}")
 
     # TODO why do I need that?
-    # browser.find_element_by_css_selector(
-    #     "span[data-tid='appBarText-Teams']").click()
+    browser.find_element_by_class_name("app-bar-selected").click()
+
+    # Update elements to keep DOM updated
+    for team in teams:
+        team.update_elem()
+
+    browser.find_element_by_class_name("call-status").click()
 
     active_meeting = meeting_to_join
 
@@ -347,6 +378,7 @@ def main():
     chrome_options.add_argument('--ignore-certificate-errors')
     chrome_options.add_argument('--ignore-ssl-errors')
     chrome_options.add_argument("--use-fake-ui-for-media-stream")
+    chrome_options.add_argument("start-maximized")
     chrome_options.add_experimental_option(
         'excludeSwitches', ['enable-logging'])
 
@@ -411,7 +443,7 @@ def main():
         if teams_button is not None:
             teams_button.click()
 
-        # if additional organisations are setup in the config file
+    # if additional organisations are setup in the config file
     if 'organisation_num' in config and config['organisation_num'] > 1:
         additional_org_num = config['organisation_num']
         select_change_org = wait_until_found("button.tenant-switcher", 20)
@@ -478,10 +510,14 @@ def main():
     while 1:
         timestamp = datetime.now()
         print(f"\n[{timestamp:%H:%M:%S}] Updating channels")
-        for team in teams:
-            team.update_meetings()
 
-        if join_newest_meeting(teams):
+        if active_meeting.isActive():
+            update_current_meeting()
+        else:
+            for team in teams:
+                team.update_meetings()
+
+        if join_newest_meeting(teams) and not active_meeting.isActive():
             for team in teams:
                 team.update_elem()
 

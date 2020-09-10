@@ -180,7 +180,6 @@ class Team:
                 if meeting_id not in [meeting.meeting_id for meeting in
                                       channel.meetings] or meeting_id == active_meeting.meeting_id:
                     time_started = time.time()
-                    participants = -1
 
                     # search the corresponding header elem and extract the time
                     for call_elem in all_call_elems:
@@ -194,28 +193,16 @@ class Team:
                             if header_id is not None:
                                 time_started = int(
                                     header_id.replace("m", "")[:-3])
-                                participants = len(call_elem.find_elements_by_css_selector(
-                                    "div > calling-live-roster > .ts-calling-live-roster > div[role='listitem']"))
                                 break
 
-                    if meeting_id == active_meeting.meeting_id:
-                        pass
-                        # if 'leave_if_less_than_participants' in config and config['leave_if_less_than_participants'] and participants < int(config['leave_if_less_than_participants']):
-                        #     hangup()
-                        # elif participants == 1 and 'leave_if_last' in config and config['leave_if_last']:
-                        #     hangup()
-                    else:
+                    if meeting_id != active_meeting.meeting_id:
                         channel.meetings.append(
                             Meeting(time_started, meeting_id))
 
     def update_elem(self):
         team_elems = browser.find_elements_by_css_selector(
             "ul>li[role='treeitem']>div[sv-element]")
-        # print(team_elems)
-        # print(self.index)
-        # throws index out of bonds
         self.elem = team_elems[self.index]
-        # pass
 
 
 def update_current_meeting():
@@ -226,7 +213,8 @@ def update_current_meeting():
     hover_over_element(actionsMenu)
 
     rosterBtn = browser.find_element_by_xpath('//button[@id="roster-button"]')
-    rosterBtn.click()
+    try_click_element(rosterBtn)
+    # rosterBtn.click()
     numStr = browser.find_elements_by_xpath(
         '//span[@class="toggle-number"][@ng-if="::ctrl.enableRosterParticipantsLimit"]')
     if len(numStr) >= 1:
@@ -235,7 +223,8 @@ def update_current_meeting():
         else:
             participants = 99999
     hover_over_element(actionsMenu)
-    rosterBtn.click()
+    try_click_element(rosterBtn)
+    # rosterBtn.click()
 
     if meeting_id == active_meeting.meeting_id:
         if 'leave_if_less_than_participants' in config and config['leave_if_less_than_participants'] and participants < int(config['leave_if_less_than_participants']):
@@ -265,6 +254,14 @@ def wait_until_found(sel, timeout):
 def hover_over_element(el):
     hover = ActionChains(browser).move_to_element(el)
     hover.perform()
+
+
+def try_click_element(el, delay=5):
+    try:
+        el.click()
+    except exceptions.ElementClickInterceptedException:
+        time.sleep(delay)
+        try_click_element(el)
 
 
 def get_teams():
@@ -347,7 +344,6 @@ def join_newest_meeting(teams):
 
     print(f"Joined meeting: {meeting_team.name} > {meeting_channel.name}")
 
-    # TODO why do I need that?
     browser.find_element_by_class_name("app-bar-selected").click()
 
     # Update elements to keep DOM updated

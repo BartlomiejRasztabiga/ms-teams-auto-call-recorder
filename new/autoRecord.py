@@ -229,6 +229,8 @@ def update_current_meeting():
             participants = int(numStr[1].text[1:-1])
         else:
             participants = 99999
+    rosterBtn.click()
+
     if meeting_id == active_meeting.meeting_id:
         if 'leave_if_less_than_participants' in config and config['leave_if_less_than_participants'] and participants < int(config['leave_if_less_than_participants']):
             hangup()

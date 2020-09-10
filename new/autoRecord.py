@@ -11,6 +11,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.utils import ChromeType
 from pynput.keyboard import Key, Controller
@@ -220,6 +221,10 @@ class Team:
 def update_current_meeting():
     meeting_id = active_meeting.meeting_id
 
+    actionsMenu = browser.find_element_by_class_name(
+        'calling-unified-bar-section')
+    hover_over_element(actionsMenu)
+
     rosterBtn = browser.find_element_by_xpath('//button[@id="roster-button"]')
     rosterBtn.click()
     numStr = browser.find_elements_by_xpath(
@@ -229,6 +234,7 @@ def update_current_meeting():
             participants = int(numStr[1].text[1:-1])
         else:
             participants = 99999
+    hover_over_element(actionsMenu)
     rosterBtn.click()
 
     if meeting_id == active_meeting.meeting_id:
@@ -254,6 +260,11 @@ def wait_until_found(sel, timeout):
     except exceptions.TimeoutException:
         print(f"Timeout waiting for element: {sel}")
         return None
+
+
+def hover_over_element(el):
+    hover = ActionChains(browser).move_to_element(el)
+    hover.perform()
 
 
 def get_teams():

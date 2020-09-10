@@ -214,7 +214,6 @@ def update_current_meeting():
 
     rosterBtn = browser.find_element_by_xpath('//button[@id="roster-button"]')
     try_click_element(rosterBtn)
-    # rosterBtn.click()
     numStr = browser.find_elements_by_xpath(
         '//span[@class="toggle-number"][@ng-if="::ctrl.enableRosterParticipantsLimit"]')
     if len(numStr) >= 1:
@@ -224,7 +223,6 @@ def update_current_meeting():
             participants = 99999
     hover_over_element(actionsMenu)
     try_click_element(rosterBtn)
-    # rosterBtn.click()
 
     if meeting_id == active_meeting.meeting_id:
         if 'leave_if_less_than_participants' in config and config['leave_if_less_than_participants'] and participants < int(config['leave_if_less_than_participants']):
@@ -260,6 +258,7 @@ def try_click_element(el, delay=5):
     try:
         el.click()
     except exceptions.ElementClickInterceptedException:
+        print('retrying click')
         time.sleep(delay)
         try_click_element(el)
 

@@ -31,11 +31,13 @@ class ScreenRecorder:
 
     def start(self):
         if (not self.recording):
+            print('starting recording')
             self.__sendRecordStopCombination()
             self.recording = True
 
     def stop(self):
         if (self.recording):
+            print('stopping recording')
             self.__sendRecordStopCombination()
             self.recording = False
 

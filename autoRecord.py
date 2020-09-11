@@ -69,7 +69,7 @@ class Channel:
     def __str__(self):
         return self.name + " [BLACKLISTED]" if self.blacklisted else self.name
 
-    def get_elem(self, parent):
+    def get_channel_elem(self, parent):
         try:
             channel_elem = parent.find_element_by_css_selector(
                 f"ul>ng-include>li[data-tid*='channel-{self.name}-li']")
@@ -143,7 +143,7 @@ class Team:
             if channel.blacklisted:
                 continue
 
-            channel_elem = channel.get_elem(channels)
+            channel_elem = channel.get_channel_elem(channels)
             try:
                 active_meeting_elem = channel_elem.find_element_by_css_selector(
                     "a>active-calls-counter[is-meeting='true']")
@@ -307,7 +307,7 @@ def join_newest_meeting(teams):
 
     channels_elem = meeting_team.expand_channels()
 
-    meeting_channel.get_elem(channels_elem).click()
+    meeting_channel.get_channel_elem(channels_elem).click()
 
     time.sleep(0.5)
     join_btn = wait_until_found(

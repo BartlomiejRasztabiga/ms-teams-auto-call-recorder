@@ -16,38 +16,14 @@ from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.utils import ChromeType
 from pynput.keyboard import Key, Controller
 
-
-class ScreenRecorder:
-    def __init__(self):
-        self.recording = False
-
-    def __sendRecordStopCombination(self):
-        keyboard.press(Key.cmd)
-        keyboard.press(Key.alt)
-        keyboard.press('r')
-        keyboard.release(Key.cmd)
-        keyboard.release(Key.alt)
-        keyboard.release('r')
-
-    def start(self):
-        if (not self.recording):
-            print('starting recording')
-            self.__sendRecordStopCombination()
-            self.recording = True
-
-    def stop(self):
-        if (self.recording):
-            print('stopping recording')
-            self.__sendRecordStopCombination()
-            self.recording = False
-
+from msrecorder.app.screenrecorder.screen_recorder_factory import ScreenRecorderFactory
 
 # Globals
 browser: webdriver.Chrome = None
 config = None
 uuid_regex = r"\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b"
 hangup_thread: Timer = None
-screenRecorder: ScreenRecorder = ScreenRecorder()
+screenRecorder = ScreenRecorderFactory().create_screen_recorder()
 keyboard: Controller = Controller()
 
 

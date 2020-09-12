@@ -156,7 +156,8 @@ class Team:
 
             active_meeting_elem.click()
 
-            if wait_until_found("button[ng-click='ctrl.joinCall()']", 60) is None:
+            if wait_until_found(
+                    "button[ng-click='ctrl.joinCall()']", 60) is None:
                 continue
 
             join_meeting_elems = browser.find_elements_by_css_selector(
@@ -231,7 +232,8 @@ def update_current_meeting():
     try_click_element(rosterBtn)
 
     if meeting_id == active_meeting.meeting_id:
-        if 'leave_if_less_than_participants' in config and config['leave_if_less_than_participants'] and participants < int(config['leave_if_less_than_participants']):
+        if 'leave_if_less_than_participants' in config and config['leave_if_less_than_participants'] and participants < int(
+                config['leave_if_less_than_participants']):
             hangup()
         elif participants == 1 and 'leave_if_last' in config and config['leave_if_last']:
             hangup()
@@ -521,7 +523,7 @@ def main():
     if "check_interval" in config and config['check_interval'] > 1:
         check_interval = config['check_interval']
 
-    while 1:
+    while True:
         timestamp = datetime.now()
         print(f"\n[{timestamp:%H:%M:%S}] Updating channels")
 

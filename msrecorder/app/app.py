@@ -26,7 +26,6 @@ from msrecorder.app.utils.utils import wait_until_found
 # Globals
 browser = get_browser()
 config = Config()
-print(config)
 hangup_thread: Timer = None
 screenRecorder = ScreenRecorderFactory().create_screen_recorder()
 keyboard: Controller = Controller()
@@ -68,7 +67,6 @@ def try_click_element(el, delay=5):
     try:
         el.click()
     except exceptions.ElementClickInterceptedException:
-        print('retrying click')
         time.sleep(delay)
         try_click_element(el)
 
@@ -192,7 +190,6 @@ def hangup():
 
 def main():
     global browser, config
-    print(browser)
     window_size = browser.get_window_size()
     if window_size['width'] < 950:
         print("Resized window")

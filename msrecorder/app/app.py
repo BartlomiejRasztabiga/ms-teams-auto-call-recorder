@@ -24,8 +24,9 @@ from msrecorder.app.models.browser import get_browser
 from msrecorder.app.utils.utils import wait_until_found
 
 # Globals
-browser: get_browser()
+browser = get_browser()
 config = Config()
+print(config)
 hangup_thread: Timer = None
 screenRecorder = ScreenRecorderFactory().create_screen_recorder()
 keyboard: Controller = Controller()
@@ -81,7 +82,7 @@ def get_teams():
     team_names = [team_name[team_name.find(
         'team-') + 5:team_name.rfind("-li")] for team_name in team_names]
 
-    team_list = [Team(team_names[i], team_elems[i], i, None)
+    team_list = [Team(browser, team_names[i], team_elems[i], i, None)
                  for i in range(len(team_elems))]
     return team_list
 
@@ -117,15 +118,15 @@ def join_newest_meeting(teams):
     meeting_channel.get_channel_elem(channels_elem).click()
 
     time.sleep(0.5)
-    join_btn = wait_until_found(
-        f"button[track-data*='{meeting_to_join.meeting_id}']", 30)
+    join_btn = wait_until_found(browser,
+                                f"button[track-data*='{meeting_to_join.meeting_id}']", 30)
     if join_btn is None:
         return
 
     join_btn.click()
 
-    join_now_btn = wait_until_found(
-        "button[data-tid='prejoin-join-button']", 30)
+    join_now_btn = wait_until_found(browser,
+                                    "button[data-tid='prejoin-join-button']", 30)
     if join_now_btn is None:
         return
 
@@ -191,7 +192,7 @@ def hangup():
 
 def main():
     global browser, config
-
+    print(browser)
     window_size = browser.get_window_size()
     if window_size['width'] < 950:
         print("Resized window")
@@ -200,67 +201,68 @@ def main():
     browser.get("https://teams.microsoft.com")
 
     if config.config['email'] != "" and config.config['password'] != "":
-        login_email = wait_until_found("input[type='email']", 30)
+        login_email = wait_until_found(browser, "input[type='email']", 30)
         if login_email is not None:
             login_email.send_keys(config.config['email'])
             time.sleep(1)
 
         # find the element again to avoid StaleElementReferenceException
-        login_email = wait_until_found("input[type='email']", 5)
+        login_email = wait_until_found(browser, "input[type='email']", 5)
         if login_email is not None:
             login_email.send_keys(Keys.ENTER)
 
-        login_pwd = wait_until_found("input[type='password']", 5)
+        login_pwd = wait_until_found(browser, "input[type='password']", 5)
         if login_pwd is not None:
             login_pwd.send_keys(config.config['password'])
             time.sleep(1)
 
         # find the element again to avoid StaleElementReferenceException
-        login_pwd = wait_until_found("input[type='password']", 5)
+        login_pwd = wait_until_found(browser, "input[type='password']", 5)
         if login_pwd is not None:
             login_pwd.send_keys(Keys.ENTER)
 
         time.sleep(1)
-        keep_logged_in = wait_until_found("input[id='idBtn_Back']", 5)
+        keep_logged_in = wait_until_found(browser, "input[id='idBtn_Back']", 5)
         if keep_logged_in is not None:
             keep_logged_in.click()
 
         time.sleep(1)
-        use_web_instead = wait_until_found(".use-app-lnk", 5)
+        use_web_instead = wait_until_found(browser, ".use-app-lnk", 5)
         if use_web_instead is not None:
             use_web_instead.click()
 
         time.sleep(1)
-        teams_button = wait_until_found(
-            "button.app-bar-link > ng-include > svg.icons-teams", 5)
+        teams_button = wait_until_found(browser,
+                                        "button.app-bar-link > ng-include > svg.icons-teams", 5)
         if teams_button is not None:
             teams_button.click()
 
     # if additional organisations are setup in the config file
     if 'organisation_num' in config.config and config.config['organisation_num'] > 1:
         additional_org_num = config.config['organisation_num']
-        select_change_org = wait_until_found("button.tenant-switcher", 20)
+        select_change_org = wait_until_found(
+            browser, "button.tenant-switcher", 20)
         if select_change_org is not None:
             select_change_org.click()
 
-            change_org = wait_until_found(
-                f"li.tenant-option[aria-posinset='{additional_org_num}']", 20)
+            change_org = wait_until_found(browser,
+                                          f"li.tenant-option[aria-posinset='{additional_org_num}']", 20)
             if change_org is not None:
                 change_org.click()
                 time.sleep(5)
 
-                use_web_instead = wait_until_found(".use-app-lnk", 5)
+                use_web_instead = wait_until_found(browser, ".use-app-lnk", 5)
                 if use_web_instead is not None:
                     use_web_instead.click()
 
                 time.sleep(1)
-                teams_button = wait_until_found(
-                    "button.app-bar-link > ng-include > svg.icons-teams", 5)
+                teams_button = wait_until_found(browser,
+                                                "button.app-bar-link > ng-include > svg.icons-teams", 5)
                 if teams_button is not None:
                     teams_button.click()
 
     print("Waiting for correct page...")
-    if wait_until_found("div[data-tid='team-channel-list']", 60 * 5) is None:
+    if wait_until_found(browser, "div[data-tid='team-channel-list']", 60 * 5) is None:
         exit(1)
 
     teams = get_teams()

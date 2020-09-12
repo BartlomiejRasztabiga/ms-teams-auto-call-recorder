@@ -8,20 +8,19 @@ from webdriver_manager.utils import ChromeType
 
 from msrecorder.app.models.channel import Channel
 from msrecorder.app.config.config import Config
-from msrecorder.app.models.browser import get_browser
 from msrecorder.app.utils.utils import wait_until_found
 from msrecorder.app.models.meeting import Meeting
 
 
 config = Config()
-browser: webdriver.Chrome = get_browser()
 uuid_regex = r"\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b"
 
 
 class Team:
-    def __init__(self, name, elem, index, channels=None):
+    def __init__(self, browser, name, elem, index, channels=None):
         if channels is None:
             channels = []
+        self.browser = browser
         self.name = name
         self.elem = elem
         self.index = index
@@ -95,11 +94,11 @@ class Team:
 
             active_meeting_elem.click()
 
-            if wait_until_found(
-                    "button[ng-click='ctrl.joinCall()']", 60) is None:
+            if wait_until_found(self.browser,
+                                "button[ng-click='ctrl.joinCall()']", 60) is None:
                 continue
 
-            join_meeting_elems = browser.find_elements_by_css_selector(
+            join_meeting_elems = self.browser.find_elements_by_css_selector(
                 "button[ng-click='ctrl.joinCall()']")
 
             meeting_ids = []
@@ -118,7 +117,7 @@ class Team:
             meeting_ids = list(dict.fromkeys(meeting_ids))
 
             time.sleep(1)
-            all_call_elems = browser.find_elements_by_css_selector(
+            all_call_elems = self.browser.find_elements_by_css_selector(
                 ".ts-calling-thread-header")
 
             for meeting_id in meeting_ids:
@@ -146,6 +145,6 @@ class Team:
                             Meeting(time_started, meeting_id))
 
     def update_elem(self):
-        team_elems = browser.find_elements_by_css_selector(
+        team_elems = self.browser.find_elements_by_css_selector(
             "ul>li[role='treeitem']>div[sv-element]")
         self.elem = team_elems[self.index]

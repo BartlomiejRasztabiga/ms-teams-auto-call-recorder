@@ -1,5 +1,3 @@
-## Built upon [Teams-Auto-Joiner](https://github.com/TobiasPankner/Teams-Auto-Joiner)
-
 ## This python script will automatically join and record [Microsoft Teams](https://www.microsoft.com/en-in/microsoft-365/microsoft-teams/group-chat-software) meetings appearing in your Teams groups.
 
 ## Features:

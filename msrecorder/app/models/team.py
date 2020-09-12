@@ -10,6 +10,7 @@ from msrecorder.app.models.channel import Channel
 from msrecorder.app.config.config import Config
 from msrecorder.app.models.browser import get_browser
 from msrecorder.app.utils.utils import wait_until_found
+from msrecorder.app.models.meeting import Meeting
 
 
 config = Config()
@@ -78,7 +79,7 @@ class Team:
             for blacklist_channel in blacklist_channels:
                 blacklist_channel.blacklisted = True
 
-    def update_meetings(self):
+    def update_meetings(self, active_meeting):
         channels = self.expand_channels()
 
         for channel in self.channels:

@@ -57,6 +57,7 @@ def update_current_meeting():
         elif participants == 1 and 'leave_if_last' in config.config and config.config['leave_if_last']:
             hangup()
 
+
 def hover_over_element(el):
     hover = ActionChains(browser).move_to_element(el)
     hover.perform()
@@ -307,7 +308,7 @@ def main():
             update_current_meeting()
         else:
             for team in teams:
-                team.update_meetings()
+                team.update_meetings(active_meeting)
 
         if join_newest_meeting(teams) and not active_meeting.isActive():
             for team in teams:

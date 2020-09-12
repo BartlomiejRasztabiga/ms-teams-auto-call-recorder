@@ -13,7 +13,6 @@
   "leave_if_last": true,
   "leave_if_less_than_participants": 10,
 
-  "headless" : false,
   "mute_audio": false,
   "chrome_type": "google-chrome",
 

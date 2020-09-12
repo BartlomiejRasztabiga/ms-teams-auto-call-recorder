@@ -24,10 +24,6 @@ def get_browser():
     chrome_options.add_experimental_option(
         'excludeSwitches', ['enable-logging'])
 
-    if 'headless' in config.config and config.config['headless']:
-        chrome_options.add_argument('--headless')
-        print("Enabled headless mode")
-
     if 'mute_audio' in config.config and config.config['mute_audio']:
         chrome_options.add_argument("--mute-audio")
 

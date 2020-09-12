@@ -540,7 +540,8 @@ def main():
         time.sleep(check_interval)
 
 
-if __name__ == "__main__":
+def run():
+    global active_meeting
     active_meeting = Meeting(-1, -1)
 
     load_config()

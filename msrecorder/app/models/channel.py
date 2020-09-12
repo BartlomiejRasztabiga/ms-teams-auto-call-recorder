@@ -1,3 +1,6 @@
+from selenium.common import exceptions
+
+
 class Channel:
     def __init__(self, name, meetings, blacklisted=False):
         self.name = name

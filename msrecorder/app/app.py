@@ -67,6 +67,7 @@ def try_click_element(el, delay=5):
     try:
         el.click()
     except exceptions.ElementClickInterceptedException:
+        print('retrying click')
         time.sleep(delay)
         try_click_element(el)
 

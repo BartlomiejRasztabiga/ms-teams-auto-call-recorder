@@ -12,7 +12,7 @@
 
 ## Requirements:
 
-- [Python3](https://www.python.org/downloads/)
+- [Python 3](https://www.python.org/downloads/)
 - [Google Chrome browser](https://www.google.com/intl/en_in/chrome/)
 - [Windows 10 (with Game Bar)](https://www.microsoft.com/pl-pl/software-download/windows10)
 
@@ -60,6 +60,9 @@
 - **leave_if_last:**  
   If true, leaves the meeting if you are the last person in it.
 
+- **leave_if_less_than_participants:**  
+  If set, leaves the meeting if the number of participants drops below given value.
+
 - **mute_audio:**  
   If true, mutes all the sounds.
 
@@ -83,17 +86,11 @@
 
 ## Usage:
 
-- Run [autoRecord.py](autoRecord.py):
+- Run:
   ```bash
-  python autoRecord.py
+  python -m msrecorder
   ```
 - The script might not work as expected if the browser is minimised i.e you may open other windows above it but do not minimize the chrome window.
-
-## Sample Scenario:
-
-- You have a meeting at 9 A.M, you may run the script anytime before 9 A.M. and the script will automatically join the meeting when the join button is available.
-- The script will then automatically join the next meeting scheduled at e.g.:- 10 A.M. AFTER the organiser ends the meeting.
-- If the organiser does not end the meeting i.e the organiser leaves the meeting instead of ending the meeting and tells the attendee to leave the meeting, the script will leave the meeting after the strength of the meeting falls down to 10 or any minimum value set by user.
 
 ## Contributing:
 

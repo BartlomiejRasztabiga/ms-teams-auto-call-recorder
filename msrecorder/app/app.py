@@ -17,175 +17,18 @@ from webdriver_manager.utils import ChromeType
 from pynput.keyboard import Key, Controller
 
 from msrecorder.app.screenrecorder.screen_recorder_factory import ScreenRecorderFactory
+from msrecorder.app.models.meeting import Meeting
+from msrecorder.app.config.config import Config
+from msrecorder.app.models.team import Team
+from msrecorder.app.models.browser import get_browser
+from msrecorder.app.utils.utils import wait_until_found
 
 # Globals
-browser: webdriver.Chrome = None
-config = None
-uuid_regex = r"\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b"
+browser: get_browser()
+config = Config()
 hangup_thread: Timer = None
 screenRecorder = ScreenRecorderFactory().create_screen_recorder()
 keyboard: Controller = Controller()
-
-
-class Meeting:
-    def __init__(self, started_at, meeting_id):
-        self.started_at = started_at
-        self.meeting_id = meeting_id
-
-    def isActive(self):
-        return self.meeting_id != -1
-
-
-class Channel:
-    def __init__(self, name, meetings, blacklisted=False):
-        self.name = name
-        self.meetings = meetings
-        self.blacklisted = blacklisted
-
-    def __str__(self):
-        return self.name + " [BLACKLISTED]" if self.blacklisted else self.name
-
-    def get_channel_elem(self, parent):
-        try:
-            channel_elem = parent.find_element_by_css_selector(
-                f"ul>ng-include>li[data-tid*='channel-{self.name}-li']")
-        except exceptions.NoSuchElementException:
-            return None
-
-        return channel_elem
-
-
-class Team:
-    def __init__(self, name, elem, index, channels=None):
-        if channels is None:
-            channels = []
-        self.name = name
-        self.elem = elem
-        self.index = index
-        self.channels = channels
-
-    def __str__(self):
-        channel_string = '\n\t'.join([str(channel)
-                                      for channel in self.channels])
-
-        return f"{self.name}\n\t{channel_string}"
-
-    def expand_channels(self):
-        channels_div_css_selector = "div.channels"
-
-        try:
-            elem = self.elem.find_element_by_css_selector(
-                channels_div_css_selector)
-        except exceptions.NoSuchElementException:
-            try:
-                self.elem.click()
-                elem = self.elem.find_element_by_css_selector(
-                    channels_div_css_selector)
-            except (exceptions.NoSuchElementException, exceptions.ElementNotInteractableException):
-                return None
-        return elem
-
-    def init_channels(self):
-        channels_elem = self.expand_channels()
-
-        channel_elems = channels_elem.find_elements_by_css_selector(
-            "ul>ng-include>li")
-
-        channel_names = [channel_elem.get_attribute(
-            "data-tid") for channel_elem in channel_elems]
-        channel_names = [channel_name[channel_name.find('-channel-') + 9:channel_name.rfind("-li")] for channel_name
-                         in
-                         channel_names if channel_name is not None]
-
-        self.channels = [Channel(channel_name, [])
-                         for channel_name in channel_names]
-
-    def check_blacklist(self):
-        blacklist = config['blacklist']
-        blacklist_item = next(
-            (team for team in blacklist if team['team_name'] == self.name), None)
-        if blacklist_item is None:
-            return
-
-        if len(blacklist_item['channel_names']) == 0:
-            for channel in self.channels:
-                channel.blacklisted = True
-        else:
-            blacklist_channels = [
-                x for x in self.channels if x.name in blacklist_item['channel_names']]
-            for blacklist_channel in blacklist_channels:
-                blacklist_channel.blacklisted = True
-
-    def update_meetings(self):
-        channels = self.expand_channels()
-
-        for channel in self.channels:
-            if channel.blacklisted:
-                continue
-
-            channel_elem = channel.get_channel_elem(channels)
-            try:
-                active_meeting_elem = channel_elem.find_element_by_css_selector(
-                    "a>active-calls-counter[is-meeting='true']")
-            except exceptions.NoSuchElementException:
-                continue
-
-            active_meeting_elem.click()
-
-            if wait_until_found(
-                    "button[ng-click='ctrl.joinCall()']", 60) is None:
-                continue
-
-            join_meeting_elems = browser.find_elements_by_css_selector(
-                "button[ng-click='ctrl.joinCall()']")
-
-            meeting_ids = []
-            for join_meeting_elem in join_meeting_elems:
-                try:
-                    uuid = re.search(
-                        uuid_regex, join_meeting_elem.get_attribute('track-data'))
-                    if uuid is None:
-                        continue
-
-                    meeting_ids.append(uuid.group(0))
-                except exceptions.StaleElementReferenceException:
-                    continue
-
-            # remove duplicates
-            meeting_ids = list(dict.fromkeys(meeting_ids))
-
-            time.sleep(1)
-            all_call_elems = browser.find_elements_by_css_selector(
-                ".ts-calling-thread-header")
-
-            for meeting_id in meeting_ids:
-                # if the meeting is active or new, do some more things
-                if meeting_id not in [meeting.meeting_id for meeting in
-                                      channel.meetings] or meeting_id == active_meeting.meeting_id:
-                    time_started = time.time()
-
-                    # search the corresponding header elem and extract the time
-                    for call_elem in all_call_elems:
-                        try:
-                            call_elem.find_element_by_css_selector(
-                                f"calling-join-button > button[track-data*='{meeting_id}'] ")
-                        except exceptions.NoSuchElementException:
-                            continue
-                        else:
-                            header_id = call_elem.get_attribute("id")
-                            if header_id is not None:
-                                time_started = int(
-                                    header_id.replace("m", "")[:-3])
-                                break
-
-                    if meeting_id != active_meeting.meeting_id:
-                        channel.meetings.append(
-                            Meeting(time_started, meeting_id))
-
-    def update_elem(self):
-        team_elems = browser.find_elements_by_css_selector(
-            "ul>li[role='treeitem']>div[sv-element]")
-        self.elem = team_elems[self.index]
 
 
 def update_current_meeting():
@@ -208,30 +51,11 @@ def update_current_meeting():
     try_click_element(rosterBtn)
 
     if meeting_id == active_meeting.meeting_id:
-        if 'leave_if_less_than_participants' in config and config['leave_if_less_than_participants'] and participants < int(
-                config['leave_if_less_than_participants']):
+        if 'leave_if_less_than_participants' in config.config and config.config['leave_if_less_than_participants'] and participants < int(
+                config.config['leave_if_less_than_participants']):
             hangup()
-        elif participants == 1 and 'leave_if_last' in config and config['leave_if_last']:
+        elif participants == 1 and 'leave_if_last' in config.config and config.config['leave_if_last']:
             hangup()
-
-
-def load_config():
-    global config
-    with open('config.json') as json_data_file:
-        config = json.load(json_data_file)
-
-
-def wait_until_found(sel, timeout):
-    try:
-        element_present = EC.visibility_of_element_located(
-            (By.CSS_SELECTOR, sel))
-        WebDriverWait(browser, timeout).until(element_present)
-
-        return browser.find_element_by_css_selector(sel)
-    except exceptions.TimeoutException:
-        print(f"Timeout waiting for element: {sel}")
-        return None
-
 
 def hover_over_element(el):
     hover = ActionChains(browser).move_to_element(el)
@@ -318,7 +142,7 @@ def join_newest_meeting(teams):
     if audio_is_on == "true":
         audio_btn.click()
 
-    if 'random_delay' in config and config['random_delay']:
+    if 'random_delay' in config.config and config.config['random_delay']:
         delay = random.randrange(10, 31, 1)
         print(f"Wating for {delay}s")
         time.sleep(delay)
@@ -337,8 +161,9 @@ def join_newest_meeting(teams):
 
     active_meeting = meeting_to_join
 
-    if 'auto_leave_after_min' in config and config['auto_leave_after_min'] > 0:
-        hangup_thread = Timer(config['auto_leave_after_min'] * 60, hangup)
+    if 'auto_leave_after_min' in config.config and config.config['auto_leave_after_min'] > 0:
+        hangup_thread = Timer(
+            config.config['auto_leave_after_min'] * 60, hangup)
         hangup_thread.start()
 
     screenRecorder.start()
@@ -366,31 +191,6 @@ def hangup():
 def main():
     global browser, config
 
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument('--ignore-certificate-errors')
-    chrome_options.add_argument('--ignore-ssl-errors')
-    chrome_options.add_argument("--use-fake-ui-for-media-stream")
-    chrome_options.add_argument("start-maximized")
-    chrome_options.add_experimental_option(
-        'excludeSwitches', ['enable-logging'])
-
-    if 'headless' in config and config['headless']:
-        chrome_options.add_argument('--headless')
-        print("Enabled headless mode")
-
-    if 'mute_audio' in config and config['mute_audio']:
-        chrome_options.add_argument("--mute-audio")
-
-    chrome_type = ChromeType.GOOGLE
-    if 'chrome_type' in config:
-        if config['chrome_type'] == "chromium":
-            chrome_type = ChromeType.CHROMIUM
-        elif config['chrome_type'] == "msedge":
-            chrome_type = ChromeType.MSEDGE
-
-    browser = webdriver.Chrome(ChromeDriverManager(
-        chrome_type=chrome_type).install(), options=chrome_options)
-
     window_size = browser.get_window_size()
     if window_size['width'] < 950:
         print("Resized window")
@@ -398,10 +198,10 @@ def main():
 
     browser.get("https://teams.microsoft.com")
 
-    if config['email'] != "" and config['password'] != "":
+    if config.config['email'] != "" and config.config['password'] != "":
         login_email = wait_until_found("input[type='email']", 30)
         if login_email is not None:
-            login_email.send_keys(config['email'])
+            login_email.send_keys(config.config['email'])
             time.sleep(1)
 
         # find the element again to avoid StaleElementReferenceException
@@ -411,7 +211,7 @@ def main():
 
         login_pwd = wait_until_found("input[type='password']", 5)
         if login_pwd is not None:
-            login_pwd.send_keys(config['password'])
+            login_pwd.send_keys(config.config['password'])
             time.sleep(1)
 
         # find the element again to avoid StaleElementReferenceException
@@ -436,8 +236,8 @@ def main():
             teams_button.click()
 
     # if additional organisations are setup in the config file
-    if 'organisation_num' in config and config['organisation_num'] > 1:
-        additional_org_num = config['organisation_num']
+    if 'organisation_num' in config.config and config.config['organisation_num'] > 1:
+        additional_org_num = config.config['organisation_num']
         select_change_org = wait_until_found("button.tenant-switcher", 20)
         if select_change_org is not None:
             select_change_org.click()
@@ -475,7 +275,7 @@ def main():
     for team in teams:
         print(team)
 
-    if 'start_automatically' not in config or not config['start_automatically']:
+    if 'start_automatically' not in config.config or not config.config['start_automatically']:
         sel_str = "\nStart [s], Reload teams [r], Quit [q]\n"
 
         selection = input(sel_str).lower()
@@ -484,7 +284,7 @@ def main():
                 browser.close()
                 exit(0)
             if selection == 'r':
-                load_config()
+                config = Config()
                 teams = get_teams()
                 for team in teams:
                     team.init_channels()
@@ -496,8 +296,8 @@ def main():
             selection = input(sel_str).lower()
 
     check_interval = 5
-    if "check_interval" in config and config['check_interval'] > 1:
-        check_interval = config['check_interval']
+    if "check_interval" in config.config and config.config['check_interval'] > 1:
+        check_interval = config.config['check_interval']
 
     while True:
         timestamp = datetime.now()
@@ -520,16 +320,16 @@ def run():
     global active_meeting
     active_meeting = Meeting(-1, -1)
 
-    load_config()
+    config = Config()
 
-    if 'run_at_time' in config and config['run_at_time'] != "":
+    if 'run_at_time' in config.config and config.config['run_at_time'] != "":
         now = datetime.now()
-        run_at = datetime.strptime(config['run_at_time'], "%H:%M").replace(
+        run_at = datetime.strptime(config.config['run_at_time'], "%H:%M").replace(
             year=now.year, month=now.month, day=now.day)
 
         if run_at.time() < now.time():
-            run_at = datetime.strptime(config['run_at_time'], "%H:%M").replace(year=now.year, month=now.month,
-                                                                               day=now.day + 1)
+            run_at = datetime.strptime(config.config['run_at_time'], "%H:%M").replace(year=now.year, month=now.month,
+                                                                                      day=now.day + 1)
 
         delay = (run_at - now).total_seconds()
 

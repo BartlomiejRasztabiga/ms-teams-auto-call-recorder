@@ -95,12 +95,16 @@ class Team:
         return f"{self.name}\n\t{channel_string}"
 
     def expand_channels(self):
+        channels_div_css_selector = "div.channels"
+
         try:
-            elem = self.elem.find_element_by_css_selector("div.channels")
+            elem = self.elem.find_element_by_css_selector(
+                channels_div_css_selector)
         except exceptions.NoSuchElementException:
             try:
                 self.elem.click()
-                elem = self.elem.find_element_by_css_selector("div.channels")
+                elem = self.elem.find_element_by_css_selector(
+                    channels_div_css_selector)
             except (exceptions.NoSuchElementException, exceptions.ElementNotInteractableException):
                 return None
         return elem

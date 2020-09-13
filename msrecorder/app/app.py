@@ -18,14 +18,14 @@ from pynput.keyboard import Key, Controller
 
 from msrecorder.app.screenrecorder.screen_recorder_factory import ScreenRecorderFactory
 from msrecorder.app.models.meeting import Meeting
-from msrecorder.app.config.config import Config
+from msrecorder.app.config.config_service import ConfigService
 from msrecorder.app.models.team import Team
 from msrecorder.app.models.browser import get_browser
 from msrecorder.app.utils.utils import wait_until_found
 
 # Globals
 browser = get_browser()
-config = Config.get_instance()
+config = ConfigService.get_instance().config
 hangup_thread: Timer = None
 screenRecorder = ScreenRecorderFactory().create_screen_recorder()
 keyboard: Controller = Controller()
@@ -51,10 +51,10 @@ def update_current_meeting():
     try_click_element(rosterBtn)
 
     if meeting_id == active_meeting.meeting_id:
-        if 'leave_if_less_than_participants' in config.config and config.config['leave_if_less_than_participants'] and participants < int(
-                config.config['leave_if_less_than_participants']):
+        if 'leave_if_less_than_participants' in config and config['leave_if_less_than_participants'] and participants < int(
+                config['leave_if_less_than_participants']):
             hangup()
-        elif participants == 1 and 'leave_if_last' in config.config and config.config['leave_if_last']:
+        elif participants == 1 and 'leave_if_last' in config and config['leave_if_last']:
             hangup()
 
 
@@ -143,7 +143,7 @@ def join_newest_meeting(teams):
     if audio_is_on == "true":
         audio_btn.click()
 
-    if 'random_delay' in config.config and config.config['random_delay']:
+    if 'random_delay' in config and config['random_delay']:
         delay = random.randrange(10, 31, 1)
         print(f"Wating for {delay}s")
         time.sleep(delay)
@@ -162,9 +162,9 @@ def join_newest_meeting(teams):
 
     active_meeting = meeting_to_join
 
-    if 'auto_leave_after_min' in config.config and config.config['auto_leave_after_min'] > 0:
+    if 'auto_leave_after_min' in config and config['auto_leave_after_min'] > 0:
         hangup_thread = Timer(
-            config.config['auto_leave_after_min'] * 60, hangup)
+            config['auto_leave_after_min'] * 60, hangup)
         hangup_thread.start()
 
     screenRecorder.start()
@@ -198,10 +198,10 @@ def main():
 
     browser.get("https://teams.microsoft.com")
 
-    if config.config['email'] != "" and config.config['password'] != "":
+    if config['email'] != "" and config['password'] != "":
         login_email = wait_until_found(browser, "input[type='email']", 30)
         if login_email is not None:
-            login_email.send_keys(config.config['email'])
+            login_email.send_keys(config['email'])
             time.sleep(1)
 
         # find the element again to avoid StaleElementReferenceException
@@ -211,7 +211,7 @@ def main():
 
         login_pwd = wait_until_found(browser, "input[type='password']", 5)
         if login_pwd is not None:
-            login_pwd.send_keys(config.config['password'])
+            login_pwd.send_keys(config['password'])
             time.sleep(1)
 
         # find the element again to avoid StaleElementReferenceException
@@ -236,8 +236,8 @@ def main():
             teams_button.click()
 
     # if additional organisations are setup in the config file
-    if 'organisation_num' in config.config and config.config['organisation_num'] > 1:
-        additional_org_num = config.config['organisation_num']
+    if 'organisation_num' in config and config['organisation_num'] > 1:
+        additional_org_num = config['organisation_num']
         select_change_org = wait_until_found(
             browser, "button.tenant-switcher", 20)
         if select_change_org is not None:
@@ -276,7 +276,7 @@ def main():
     for team in teams:
         print(team)
 
-    if 'start_automatically' not in config.config or not config.config['start_automatically']:
+    if 'start_automatically' not in config or not config['start_automatically']:
         sel_str = "\nStart [s], Reload teams [r], Quit [q]\n"
 
         selection = input(sel_str).lower()
@@ -285,7 +285,7 @@ def main():
                 browser.close()
                 exit(0)
             if selection == 'r':
-                config = Config.get_instance()
+                config = ConfigService.get_instance().config
                 teams = get_teams()
                 for team in teams:
                     team.init_channels()
@@ -297,8 +297,8 @@ def main():
             selection = input(sel_str).lower()
 
     check_interval = 5
-    if "check_interval" in config.config and config.config['check_interval'] > 1:
-        check_interval = config.config['check_interval']
+    if "check_interval" in config and config['check_interval'] > 1:
+        check_interval = config['check_interval']
 
     while True:
         timestamp = datetime.now()
@@ -321,15 +321,15 @@ def run():
     global active_meeting
     active_meeting = Meeting(-1, -1)
 
-    config = Config.get_instance()
+    config = ConfigService.get_instance().config
 
-    if 'run_at_time' in config.config and config.config['run_at_time'] != "":
+    if 'run_at_time' in config and config['run_at_time'] != "":
         now = datetime.now()
-        run_at = datetime.strptime(config.config['run_at_time'], "%H:%M").replace(
+        run_at = datetime.strptime(config['run_at_time'], "%H:%M").replace(
             year=now.year, month=now.month, day=now.day)
 
         if run_at.time() < now.time():
-            run_at = datetime.strptime(config.config['run_at_time'], "%H:%M").replace(year=now.year, month=now.month,
+            run_at = datetime.strptime(config['run_at_time'], "%H:%M").replace(year=now.year, month=now.month,
                                                                                       day=now.day + 1)
 
         delay = (run_at - now).total_seconds()

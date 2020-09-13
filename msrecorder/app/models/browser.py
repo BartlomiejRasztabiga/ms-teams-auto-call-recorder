@@ -8,13 +8,13 @@ from selenium.webdriver.common.action_chains import ActionChains
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.utils import ChromeType
 
-from msrecorder.app.config.config import Config
+from msrecorder.app.config_service import ConfigService
 
 
 def get_browser():
     browser: webdriver.Chrome = None
 
-    config = Config.get_instance()
+    config = ConfigService.get_instance().config
 
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument('--ignore-certificate-edrrors')
@@ -24,14 +24,14 @@ def get_browser():
     chrome_options.add_experimental_option(
         'excludeSwitches', ['enable-logging'])
 
-    if 'mute_audio' in config.config and config.config['mute_audio']:
+    if 'mute_audio' in config and config['mute_audio']:
         chrome_options.add_argument("--mute-audio")
 
     chrome_type = ChromeType.GOOGLE
-    if 'chrome_type' in config.config:
-        if config.config['chrome_type'] == "chromium":
+    if 'chrome_type' in config:
+        if config['chrome_type'] == "chromium":
             chrome_type = ChromeType.CHROMIUM
-        elif config.config['chrome_type'] == "msedge":
+        elif config['chrome_type'] == "msedge":
             chrome_type = ChromeType.MSEDGE
 
     browser = webdriver.Chrome(ChromeDriverManager(

@@ -7,12 +7,12 @@ from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.utils import ChromeType
 
 from msrecorder.app.models.channel import Channel
-from msrecorder.app.config.config import Config
+from msrecorder.app.config_service import ConfigService
 from msrecorder.app.utils.utils import wait_until_found
 from msrecorder.app.models.meeting import Meeting
 
 
-config = Config.get_instance()
+config = ConfigService.get_instance().config
 uuid_regex = r"\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b"
 
 
@@ -63,7 +63,7 @@ class Team:
                          for channel_name in channel_names]
 
     def check_blacklist(self):
-        blacklist = config.config['blacklist']
+        blacklist = config['blacklist']
         blacklist_item = next(
             (team for team in blacklist if team['team_name'] == self.name), None)
         if blacklist_item is None:

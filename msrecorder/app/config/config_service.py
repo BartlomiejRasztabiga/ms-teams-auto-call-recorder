@@ -1,15 +1,15 @@
 import json
 
 
-class Config:
+class ConfigService:
     instance = None
 
     @staticmethod
     def get_instance():
-        if Config.instance is None:
-            Config.instance = Config()
+        if ConfigService.instance is None:
+            ConfigService.instance = ConfigService()
 
-        return Config.instance
+        return ConfigService.instance
 
     def __init__(self):
         self.config = None

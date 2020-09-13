@@ -12,7 +12,7 @@ from msrecorder.app.utils.utils import wait_until_found
 from msrecorder.app.models.meeting import Meeting
 
 
-config = Config()
+config = Config.get_instance()
 uuid_regex = r"\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b"
 
 

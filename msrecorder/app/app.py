@@ -25,7 +25,7 @@ from msrecorder.app.utils.utils import wait_until_found
 
 # Globals
 browser = get_browser()
-config = Config()
+config = Config.get_instance()
 hangup_thread: Timer = None
 screenRecorder = ScreenRecorderFactory().create_screen_recorder()
 keyboard: Controller = Controller()
@@ -285,7 +285,7 @@ def main():
                 browser.close()
                 exit(0)
             if selection == 'r':
-                config = Config()
+                config = Config.get_instance()
                 teams = get_teams()
                 for team in teams:
                     team.init_channels()
@@ -321,7 +321,7 @@ def run():
     global active_meeting
     active_meeting = Meeting(-1, -1)
 
-    config = Config()
+    config = Config.get_instance()
 
     if 'run_at_time' in config.config and config.config['run_at_time'] != "":
         now = datetime.now()

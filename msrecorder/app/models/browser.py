@@ -14,7 +14,7 @@ from msrecorder.app.config.config import Config
 def get_browser():
     browser: webdriver.Chrome = None
 
-    config = Config()
+    config = Config.get_instance()
 
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument('--ignore-certificate-edrrors')

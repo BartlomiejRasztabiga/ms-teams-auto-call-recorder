@@ -8,7 +8,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.utils import ChromeType
 
-from msrecorder.app.config_service import ConfigService
+from msrecorder.app.config.config_service import ConfigService
 
 
 def get_browser():

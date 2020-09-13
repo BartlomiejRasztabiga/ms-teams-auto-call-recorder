@@ -7,7 +7,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.utils import ChromeType
 
 from msrecorder.app.models.channel import Channel
-from msrecorder.app.config_service import ConfigService
+from msrecorder.app.config.config_service import ConfigService
 from msrecorder.app.utils.utils import wait_until_found
 from msrecorder.app.models.meeting import Meeting
 

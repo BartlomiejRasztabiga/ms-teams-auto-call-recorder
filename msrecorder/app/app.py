@@ -20,11 +20,11 @@ from msrecorder.app.screenrecorder.screen_recorder_factory import ScreenRecorder
 from msrecorder.app.models.meeting import Meeting
 from msrecorder.app.config.config_service import ConfigService
 from msrecorder.app.models.team import Team
-from msrecorder.app.models.browser import get_browser
+from msrecorder.app.models.browser_service import BrowserService
 from msrecorder.app.utils.utils import wait_until_found
 
 # Globals
-browser = get_browser()
+browser = BrowserService.get_instance().browser
 config = ConfigService.get_instance().config
 hangup_thread: Timer = None
 screenRecorder = ScreenRecorderFactory().create_screen_recorder()

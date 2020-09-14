@@ -319,7 +319,7 @@ def main():
 
 def run():
     global active_meeting
-    active_meeting = Meeting(-1, -1)
+    active_meeting = Meeting()
 
     config = ConfigService.get_instance().config
 

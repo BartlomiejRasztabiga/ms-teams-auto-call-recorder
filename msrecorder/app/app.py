@@ -51,10 +51,9 @@ def update_current_meeting():
     try_click_element(rosterBtn)
 
     if meeting_id == active_meeting.meeting_id:
-        if 'leave_if_less_than_participants' in config and config['leave_if_less_than_participants'] and participants < int(
-                config['leave_if_less_than_participants']):
+        if config.leave_if_less_than_participants and participants < int(config.leave_if_less_than_participants):
             hangup()
-        elif participants == 1 and 'leave_if_last' in config and config['leave_if_last']:
+        elif participants == 1 and config.leave_if_last is True:
             hangup()
 
 
@@ -143,7 +142,7 @@ def join_newest_meeting(teams):
     if audio_is_on == "true":
         audio_btn.click()
 
-    if 'random_delay' in config and config['random_delay']:
+    if config.random_delay:
         delay = random.randrange(10, 31, 1)
         print(f"Wating for {delay}s")
         time.sleep(delay)
@@ -162,9 +161,8 @@ def join_newest_meeting(teams):
 
     active_meeting = meeting_to_join
 
-    if 'auto_leave_after_min' in config and config['auto_leave_after_min'] > 0:
-        hangup_thread = Timer(
-            config['auto_leave_after_min'] * 60, hangup)
+    if config.auto_leave_after_min > 0:
+        hangup_thread = Timer(config.auto_leave_after_min * 60, hangup)
         hangup_thread.start()
 
     screenRecorder.start()
@@ -198,24 +196,27 @@ def main():
 
     browser.get("https://teams.microsoft.com")
 
-    if config['email'] != "" and config['password'] != "":
-        login_email = wait_until_found(browser, "input[type='email']", 30)
+    input_type_email = "input[type='email']"
+    input_type_password = "input[type='password']"
+
+    if config.email != "" and config.password != "":
+        login_email = wait_until_found(browser, input_type_email, 30)
         if login_email is not None:
-            login_email.send_keys(config['email'])
+            login_email.send_keys(config.email)
             time.sleep(1)
 
         # find the element again to avoid StaleElementReferenceException
-        login_email = wait_until_found(browser, "input[type='email']", 5)
+        login_email = wait_until_found(browser, input_type_email, 5)
         if login_email is not None:
             login_email.send_keys(Keys.ENTER)
 
-        login_pwd = wait_until_found(browser, "input[type='password']", 5)
+        login_pwd = wait_until_found(browser, input_type_password, 5)
         if login_pwd is not None:
-            login_pwd.send_keys(config['password'])
+            login_pwd.send_keys(config.password)
             time.sleep(1)
 
         # find the element again to avoid StaleElementReferenceException
-        login_pwd = wait_until_found(browser, "input[type='password']", 5)
+        login_pwd = wait_until_found(browser, input_type_password, 5)
         if login_pwd is not None:
             login_pwd.send_keys(Keys.ENTER)
 
@@ -236,8 +237,8 @@ def main():
             teams_button.click()
 
     # if additional organisations are setup in the config file
-    if 'organisation_num' in config and config['organisation_num'] > 1:
-        additional_org_num = config['organisation_num']
+    if config.organisation_num > 1:
+        additional_org_num = config.organisation_num
         select_change_org = wait_until_found(
             browser, "button.tenant-switcher", 20)
         if select_change_org is not None:
@@ -276,7 +277,7 @@ def main():
     for team in teams:
         print(team)
 
-    if 'start_automatically' not in config or not config['start_automatically']:
+    if not config.start_automatically:
         sel_str = "\nStart [s], Reload teams [r], Quit [q]\n"
 
         selection = input(sel_str).lower()
@@ -297,8 +298,8 @@ def main():
             selection = input(sel_str).lower()
 
     check_interval = 5
-    if "check_interval" in config and config['check_interval'] > 1:
-        check_interval = config['check_interval']
+    if config.check_interval > 1:
+        check_interval = config.check_interval
 
     while True:
         timestamp = datetime.now()
@@ -323,14 +324,14 @@ def run():
 
     config = ConfigService.get_instance().config
 
-    if 'run_at_time' in config and config['run_at_time'] != "":
+    if config.run_at_time and config.run_at_time != "":
         now = datetime.now()
-        run_at = datetime.strptime(config['run_at_time'], "%H:%M").replace(
+        run_at = datetime.strptime(config.run_at_time, "%H:%M").replace(
             year=now.year, month=now.month, day=now.day)
 
         if run_at.time() < now.time():
-            run_at = datetime.strptime(config['run_at_time'], "%H:%M").replace(year=now.year, month=now.month,
-                                                                                      day=now.day + 1)
+            run_at = datetime.strptime(config.run_at_time, "%H:%M").replace(year=now.year, month=now.month,
+                                                                               day=now.day + 1)
 
         delay = (run_at - now).total_seconds()
 

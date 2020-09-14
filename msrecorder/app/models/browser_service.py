@@ -45,17 +45,19 @@ class BrowserService:
         chrome_options.add_experimental_option(
             'excludeSwitches', ['enable-logging'])
 
-        if 'mute_audio' in self.config and self.config['mute_audio']:
+        if self.config.mute_audio:
             chrome_options.add_argument("--mute-audio")
 
         return chrome_options
 
     def __get_chrome_type(self):
         chrome_type = ChromeType.GOOGLE
-        if 'chrome_type' in self.config:
-            if self.config['chrome_type'] == "chromium":
+        # chrome_type = self.config.get
+
+        if self.config.chrome_type:
+            if self.config.chrome_type == "chromium":
                 chrome_type = ChromeType.CHROMIUM
-            elif self.config['chrome_type'] == "msedge":
+            elif self.config.chrome_type == "msedge":
                 chrome_type = ChromeType.MSEDGE
 
         return chrome_type

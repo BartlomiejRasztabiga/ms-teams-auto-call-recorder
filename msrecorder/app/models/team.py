@@ -63,7 +63,8 @@ class Team:
                          for channel_name in channel_names]
 
     def check_blacklist(self):
-        blacklist = config['blacklist']
+        blacklist = config.config['blacklist']
+        print(blacklist)
         blacklist_item = next(
             (team for team in blacklist if team['team_name'] == self.name), None)
         if blacklist_item is None:

@@ -22,13 +22,21 @@ class BrowserService:
         return BrowserService.instance
 
     def __init__(self):
+        self.config = ConfigService.get_instance().config
         self.browser = self.__get_browser()
 
     def __get_browser(self):
         browser: webdriver.Chrome = None
 
-        config = ConfigService.get_instance().config
+        chrome_options = self.__get_chrome_options()
+        chrome_type = self.__get_chrome_type()
 
+        browser = webdriver.Chrome(ChromeDriverManager(
+            chrome_type=chrome_type).install(), options=chrome_options)
+
+        return browser
+
+    def __get_chrome_options(self):
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument('--ignore-certificate-edrrors')
         chrome_options.add_argument('--ignore-ssl-errors')
@@ -37,17 +45,17 @@ class BrowserService:
         chrome_options.add_experimental_option(
             'excludeSwitches', ['enable-logging'])
 
-        if 'mute_audio' in config and config['mute_audio']:
+        if 'mute_audio' in self.config and self.config['mute_audio']:
             chrome_options.add_argument("--mute-audio")
 
+        return chrome_options
+
+    def __get_chrome_type(self):
         chrome_type = ChromeType.GOOGLE
-        if 'chrome_type' in config:
-            if config['chrome_type'] == "chromium":
+        if 'chrome_type' in self.config:
+            if self.config['chrome_type'] == "chromium":
                 chrome_type = ChromeType.CHROMIUM
-            elif config['chrome_type'] == "msedge":
+            elif self.config['chrome_type'] == "msedge":
                 chrome_type = ChromeType.MSEDGE
 
-        browser = webdriver.Chrome(ChromeDriverManager(
-            chrome_type=chrome_type).install(), options=chrome_options)
-
-        return browser
+        return chrome_type
